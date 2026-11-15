@@ -268,11 +268,10 @@
             <form onsubmit="event.preventDefault(); saveEditedItem();" class="p-5 space-y-4 overflow-y-auto flex-1">
                 <input type="hidden" id="edit-item-id">
                 
-                <!-- CHAVE DE ATIVAR/DESATIVAR -->
                 <div class="flex items-center justify-between p-3 bg-stone-50 border border-stone-200 rounded-xl">
                     <div>
                         <p class="text-sm font-bold text-stone-800">Item Disponível?</p>
-                        <p class="text-xs text-stone-500">Se desativado, o item fica esgotado e não pode ser pedido.</p>
+                        <p class="text-xs text-stone-500">Se desativado, o item fica esgotado.</p>
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="edit-item-active" class="sr-only peer" checked>
@@ -337,15 +336,35 @@
 
     <div id="toast-container" class="fixed top-20 right-4 z-50 pointer-events-none flex flex-col gap-2"></div>
 
-    <script>
-        // REGISTRO SERVICE WORKER
+    <script type="module">
+        // ==========================================
+        // CONEXÃO COM O FIREBASE
+        // ==========================================
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, doc, setDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCMY1HWBZuUiMD2k2EZpVS-2dtpAtThRI",
+            authDomain: "mh-refeicoes.firebaseapp.com",
+            projectId: "mh-refeicoes",
+            storageBucket: "mh-refeicoes.firebasestorage.app",
+            messagingSenderId: "685576782659",
+            appId: "1:685576782659:web:1f036606e7623b52fae5f6"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // ==========================================
+        // LÓGICA DO APP
+        // ==========================================
+        
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(err => console.log('Erro SW:', err)); });
         }
 
-        // LÓGICA DO APP
         let RESTAURANT_CONFIG = { name: "MH Refeições", subtitle: "Chef Marcia Leal", whatsappNumber: "5592981626445", logoUrl: "", coverUrl: "", hours: "Seg a Sáb • 11:00 às 14:00", openMode: "auto" };
-        const STORAGE_KEY_CONFIG = "mh_cfg_v5"; const STORAGE_KEY_MENU = "mh_menu_v5"; const STORAGE_KEY_CATS = "mh_cats_v5";
+        const STORAGE_KEY_CONFIG = "mh_cfg_v6"; const STORAGE_KEY_CATS = "mh_cats_v6";
 
         try { const s = localStorage.getItem(STORAGE_KEY_CONFIG); if (s) RESTAURANT_CONFIG = { ...RESTAURANT_CONFIG, ...JSON.parse(s) }; } catch (e) {}
         function persistConfig() { try { localStorage.setItem(STORAGE_KEY_CONFIG, JSON.stringify(RESTAURANT_CONFIG)); } catch (e) {} }
@@ -354,28 +373,134 @@
         try { const s = localStorage.getItem(STORAGE_KEY_CATS); if (s) { const p = JSON.parse(s); if (Array.isArray(p) && p.length > 0) CATEGORIES = p; } } catch (e) {}
         function persistCategories() { try { localStorage.setItem(STORAGE_KEY_CATS, JSON.stringify(CATEGORIES)); } catch (e) {} }
 
-        const DEFAULT_MENU_ITEMS = [
-            { id: "prato-1", category: "pratos", name: "Tambaqui Assado na Brasa", description: "Banda de tambaqui sem espinha assada na brasa, acompanha arroz branco, baião de dois, farofa crocante e vinagrete.", price: 38.00, image: "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=600&q=80", isActive: true, requiredChoice: { title: "Acompanhamento Principal", options: [{ name: "Arroz + Baião", price: 0 }, { name: "Somente Baião", price: 0 }] }, addons: [{ name: "Farofa Extra", price: 5.00 }] },
-            { id: "prato-2", category: "pratos", name: "Bife Acebolado da Chef", description: "Suculento contra-filé com cebolas caramelizadas, arroz, feijão, batata frita e salada.", price: 26.00, image: "https://images.unsplash.com/photo-1600891964092-4316c288032e?auto=format&fit=crop&w=600&q=80", isActive: true, requiredChoice: { title: "Ponto da Carne", options: [{ name: "Ao Ponto", price: 0 }, { name: "Bem Passado", price: 0 }] } },
-            { id: "porcao-1", category: "porcoes", name: "Macaxeira Frita com Carne de Sol", description: "Porção de macaxeira crocante coberta com carne de sol e queijo coalho.", price: 36.00, image: "https://images.unsplash.com/photo-1518013431117-eb1465fa5752?auto=format&fit=crop&w=600&q=80", isActive: true },
-            { id: "bebida-1", category: "bebidas", name: "Suco Natural (500ml)", description: "Preparado na hora com polpa regional.", price: 9.00, image: "https://images.unsplash.com/photo-1621506289937-a8e4df240d0b?auto=format&fit=crop&w=600&q=80", isActive: true, requiredChoice: { title: "Sabor", options: [{ name: "Cupuaçu", price: 0 }, { name: "Maracujá", price: 0 }] } },
-            { id: "sobremesa-1", category: "sobremesas", name: "Pudim de Leite", description: "Fatia generosa do tradicional pudim com calda de caramelo.", price: 10.00, image: "https://images.unsplash.com/photo-1590080875515-8a3a8dc5735e?auto=format&fit=crop&w=600&q=80", isActive: true }
-        ];
-
-        let MENU_ITEMS = [...DEFAULT_MENU_ITEMS];
-        try { const s = localStorage.getItem(STORAGE_KEY_MENU); if (s) { const p = JSON.parse(s); if (Array.isArray(p) && p.length > 0) MENU_ITEMS = p; } } catch (e) {}
-        function persistMenu() { try { localStorage.setItem(STORAGE_KEY_MENU, JSON.stringify(MENU_ITEMS)); } catch (e) {} }
-
+        let MENU_ITEMS = [];
         let cart = [], activeCategory = CATEGORIES[0]?.id || "pratos", searchQuery = "", currentModalItem = null, currentModalQty = 1;
+        let reqChoices = [], addsList = [];
 
-        function isRestaurantCurrentlyOpen() {
-            if (RESTAURANT_CONFIG.openMode === "open") return true;
-            if (RESTAURANT_CONFIG.openMode === "closed") return false;
-            const now = new Date(); if (now.getDay() === 0) return false;
-            const mins = now.getHours() * 60 + now.getMinutes();
-            return mins >= 660 && mins < 840;
-        }
+        // --- FUNÇÕES GLOBAIS (Para o HTML conseguir clicar) ---
+        window.openAddItemModal = (id = null) => {
+            const isNew = !id;
+            document.getElementById("edit-item-modal-title").innerHTML = isNew ? "Adicionar Novo Item" : "Editar Item";
+            const catSel = document.getElementById("edit-item-category"); 
+            catSel.innerHTML = CATEGORIES.map(c => `<option value="${c.id}">${c.name}</option>`).join("");
+            
+            if (isNew) {
+                document.getElementById("edit-item-id").value = ""; document.getElementById("edit-item-name").value = ""; document.getElementById("edit-item-price").value = ""; document.getElementById("edit-item-desc").value = ""; document.getElementById("edit-item-image-url").value = ""; catSel.value = activeCategory; document.getElementById("edit-item-required-title").value = ""; document.getElementById("edit-item-active").checked = true; reqChoices = []; addsList = [];
+            } else {
+                const i = MENU_ITEMS.find(x => x.id === id); if (!i) return;
+                document.getElementById("edit-item-id").value = i.id; document.getElementById("edit-item-name").value = i.name; document.getElementById("edit-item-price").value = i.price.toFixed(2); document.getElementById("edit-item-desc").value = i.description || ""; document.getElementById("edit-item-image-url").value = i.image; catSel.value = i.category;
+                document.getElementById("edit-item-active").checked = i.isActive !== false;
+                document.getElementById("edit-item-required-title").value = i.requiredChoice ? i.requiredChoice.title : ""; reqChoices = i.requiredChoice ? [...i.requiredChoice.options] : []; addsList = i.addons ? [...i.addons] : [];
+            }
+            renderChoices(); renderAddons(); document.getElementById("edit-item-modal").classList.remove("hidden"); if (window.lucide) lucide.createIcons();
+        };
+        window.openEditItemModal = window.openAddItemModal;
+        window.closeEditItemModal = () => { document.getElementById("edit-item-modal").classList.add("hidden"); };
+        
+        window.openItemModal = (id) => {
+            const item = MENU_ITEMS.find(i => i.id === id); if (!item || item.isActive === false) return;
+            currentModalItem = item; currentModalQty = 1;
+            document.getElementById("modal-item-img").src = item.image; document.getElementById("modal-item-name").textContent = item.name; document.getElementById("modal-item-desc").textContent = item.description || ""; document.getElementById("modal-item-price").textContent = formatCurrency(item.price); document.getElementById("modal-qty-display").textContent = currentModalQty; document.getElementById("modal-notes").value = "";
+            
+            const cSec = document.getElementById("modal-choices-section"), cList = document.getElementById("modal-choices-list");
+            if (item.requiredChoice && item.requiredChoice.options.length) { cSec.classList.remove("hidden"); document.getElementById("modal-choices-title").textContent = item.requiredChoice.title + " *"; cList.innerHTML = item.requiredChoice.options.map((o, i) => `<label class="flex items-center justify-between p-3 rounded-xl border border-stone-200 cursor-pointer"><input type="radio" name="reqOpt" value="${i}" ${i===0?'checked':''} onchange="updateModalTotalPrice()"><span class="text-xs font-bold">${o.name}</span><span class="text-xs font-bold text-brand-700">${o.price > 0 ? '+ ' + formatCurrency(o.price) : 'Incluso'}</span></label>`).join(""); } else { cSec.classList.add("hidden"); }
 
+            const aSec = document.getElementById("modal-addons-section"), aList = document.getElementById("modal-addons-list");
+            if (item.addons && item.addons.length) { aSec.classList.remove("hidden"); aList.innerHTML = item.addons.map((a, i) => `<label class="flex items-center justify-between p-3 rounded-xl border border-stone-200 cursor-pointer"><input type="checkbox" name="addonChk" value="${i}" onchange="updateModalTotalPrice()"><span class="text-xs font-bold">${a.name}</span><span class="text-xs font-bold text-brand-700">+ ${formatCurrency(a.price)}</span></label>`).join(""); } else { aSec.classList.add("hidden"); }
+            
+            updateModalTotalPrice(); document.getElementById("item-modal").classList.remove("hidden"); if (window.lucide) lucide.createIcons();
+        };
+        window.closeItemModal = () => { document.getElementById("item-modal").classList.add("hidden"); currentModalItem = null; };
+        
+        window.incrementModalQty = () => { currentModalQty++; document.getElementById("modal-qty-display").textContent = currentModalQty; updateModalTotalPrice(); };
+        window.decrementModalQty = () => { if (currentModalQty > 1) { currentModalQty--; document.getElementById("modal-qty-display").textContent = currentModalQty; updateModalTotalPrice(); } };
+        window.updateModalTotalPrice = () => {
+            if (!currentModalItem) return;
+            let p = currentModalItem.price;
+            const r = document.querySelector('input[name="reqOpt"]:checked'); if (r) p += currentModalItem.requiredChoice.options[parseInt(r.value)].price || 0;
+            document.querySelectorAll('input[name="addonChk"]:checked').forEach(c => p += currentModalItem.addons[parseInt(c.value)].price || 0);
+            document.getElementById("modal-total-price").textContent = formatCurrency(p * currentModalQty);
+        };
+
+        window.confirmAddToCart = () => {
+            if (!currentModalItem) return;
+            let opt = ""; const r = document.querySelector('input[name="reqOpt"]:checked'); if (r) opt = currentModalItem.requiredChoice.options[parseInt(r.value)].name;
+            const adds = []; document.querySelectorAll('input[name="addonChk"]:checked').forEach(c => adds.push(currentModalItem.addons[parseInt(c.value)].name));
+            
+            let p = currentModalItem.price;
+            if (r) p += currentModalItem.requiredChoice.options[parseInt(r.value)].price || 0;
+            document.querySelectorAll('input[name="addonChk"]:checked').forEach(c => p += currentModalItem.addons[parseInt(c.value)].price || 0);
+
+            cart.push({ id: currentModalItem.id, name: currentModalItem.name, unitPrice: p, qty: currentModalQty, chosenOption: opt, addons: adds, notes: document.getElementById("modal-notes").value.trim() });
+            window.closeItemModal(); updateCartBadge(); showToast(`"${currentModalItem.name}" adicionado!`);
+        };
+
+        window.openCartModal = () => { renderCartItems(); updateCheckoutTotals(); document.getElementById("cart-modal").classList.remove("hidden"); if (window.lucide) lucide.createIcons(); };
+        window.closeCartModal = () => { document.getElementById("cart-modal").classList.add("hidden"); };
+        window.incrementCartItem = (i) => { cart[i].qty++; renderCartItems(); updateCartBadge(); updateCheckoutTotals(); };
+        window.decrementCartItem = (i) => { if (cart[i].qty > 1) cart[i].qty--; else cart.splice(i, 1); renderCartItems(); updateCartBadge(); updateCheckoutTotals(); };
+        window.removeCartItem = (i) => { cart.splice(i, 1); renderCartItems(); updateCartBadge(); updateCheckoutTotals(); };
+
+        window.toggleOrderTypeFields = () => { document.getElementById("table-fields").classList.toggle("hidden", document.querySelector('input[name="orderType"]:checked').value !== "mesa"); };
+        window.toggleChangeField = () => { document.getElementById("change-field-wrapper").classList.toggle("hidden", document.getElementById("payment-method").value !== "Dinheiro"); };
+
+        window.addRequiredChoiceRow = () => { reqChoices.push({ name: "", price: 0 }); renderChoices(); };
+        window.renderChoices = () => { document.getElementById("required-choices-container").innerHTML = reqChoices.map((o, i) => `<div class="flex gap-2"><input type="text" value="${o.name}" oninput="reqChoices[${i}].name=this.value" class="flex-1 px-3 py-1.5 border rounded-lg text-xs" placeholder="Nome"><input type="number" value="${o.price}" oninput="reqChoices[${i}].price=parseFloat(this.value)||0" class="w-20 px-3 py-1.5 border rounded-lg text-xs" placeholder="R$"><button type="button" onclick="reqChoices.splice(${i},1);renderChoices()" class="text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`).join("") || `<p class="text-xs text-stone-400">Nenhuma opção.</p>`; if (window.lucide) lucide.createIcons(); };
+        
+        window.addAddonRow = () => { addsList.push({ name: "", price: 0 }); renderAddons(); };
+        window.renderAddons = () => { document.getElementById("addons-container").innerHTML = addsList.map((a, i) => `<div class="flex gap-2"><input type="text" value="${a.name}" oninput="addsList[${i}].name=this.value" class="flex-1 px-3 py-1.5 border rounded-lg text-xs" placeholder="Nome"><input type="number" value="${a.price}" oninput="addsList[${i}].price=parseFloat(this.value)||0" class="w-20 px-3 py-1.5 border rounded-lg text-xs" placeholder="R$"><button type="button" onclick="addsList.splice(${i},1);renderAddons()" class="text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`).join("") || `<p class="text-xs text-stone-400">Nenhum adicional.</p>`; if (window.lucide) lucide.createIcons(); };
+
+        window.handleItemImageUpload = (e) => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = ev => { document.getElementById("edit-item-image-url").value = ev.target.result; showToast("Foto carregada!"); }; r.readAsDataURL(f); };
+
+        window.saveEditedItem = async () => {
+            const id = document.getElementById("edit-item-id").value; const name = document.getElementById("edit-item-name").value.trim(); const price = parseFloat(document.getElementById("edit-item-price").value); const cat = document.getElementById("edit-item-category").value; const desc = document.getElementById("edit-item-desc").value.trim(); const img = document.getElementById("edit-item-image-url").value.trim() || "https://placehold.co/300x300/8B0D18/FFFFFF?text=MH"; const title = document.getElementById("edit-item-required-title").value.trim();
+            const isActive = document.getElementById("edit-item-active").checked;
+            
+            const validC = reqChoices.filter(o => o.name.trim()); const validA = addsList.filter(a => a.name.trim() && a.price > 0);
+            const req = (validC.length && title) ? { title, options: validC } : null; const add = validA.length ? validA : null;
+
+            const itemData = { name, price, category: cat, description: desc, image: img, requiredChoice: req, addons: add, isActive };
+
+            try {
+                if (id) {
+                    await updateDoc(doc(db, "menu", id), itemData);
+                    showToast("Item atualizado!");
+                } else {
+                    const newId = "item_" + Date.now();
+                    await setDoc(doc(db, "menu", newId), itemData);
+                    showToast("Item criado!");
+                }
+            } catch (error) {
+                console.error("Erro Firebase:", error);
+                showToast("Erro ao salvar no banco.", "error");
+            }
+
+            const querySnapshot = await getDocs(collection(db, "menu"));
+            MENU_ITEMS = [];
+            querySnapshot.forEach((doc) => { MENU_ITEMS.push({ id: doc.id, ...doc.data() }); });
+            
+            activeCategory = cat; renderCategoryTabs(); renderMenu(); window.closeEditItemModal();
+        };
+
+        window.openManageCategoriesModal = () => { tempCats = JSON.parse(JSON.stringify(CATEGORIES)); updateCatManagerUI(); document.getElementById("manage-categories-modal").classList.remove("hidden"); if (window.lucide) lucide.createIcons(); };
+        window.closeManageCategoriesModal = () => { document.getElementById("manage-categories-modal").classList.add("hidden"); };
+        window.addNewCategory = () => { tempCats.push({ id: "cat_" + Date.now(), name: "Nova Aba", icon: "circle" }); updateCatManagerUI(); };
+        window.saveCategories = () => { CATEGORIES = tempCats.filter(c => c.name.trim()); persistCategories(); if (!CATEGORIES.find(c => c.id === activeCategory)) activeCategory = CATEGORIES[0].id; renderCategoryTabs(); renderMenu(); window.closeManageCategoriesModal(); showToast("Abas salvas!"); };
+        
+        window.triggerCoverUpload = () => { document.getElementById("cover-file-input").click(); };
+        window.handleCoverUpload = (e) => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = ev => { RESTAURANT_CONFIG.coverUrl = ev.target.result; persistConfig(); renderHeaderInfo(); showToast("Capa atualizada!"); }; r.readAsDataURL(f); };
+        window.triggerDirectLogoUpload = () => { document.getElementById("direct-logo-input").click(); };
+        window.handleLogoFileUpload = (e, direct = false) => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = ev => { if (direct) { RESTAURANT_CONFIG.logoUrl = ev.target.result; persistConfig(); renderHeaderInfo(); showToast("Logo atualizada!"); } else { document.getElementById("cfg-logo-url").value = ev.target.result; showToast("Imagem carregada!"); } }; r.readAsDataURL(f); };
+        window.resetLogoToDefault = () => { document.getElementById("cfg-logo-url").value = ""; RESTAURANT_CONFIG.logoUrl = ""; persistConfig(); renderHeaderInfo(); showToast("Logo padrão!"); };
+        
+        window.openSettingsModal = () => { document.getElementById("cfg-name").value = RESTAURANT_CONFIG.name; document.getElementById("cfg-whatsapp").value = RESTAURANT_CONFIG.whatsappNumber; document.getElementById("cfg-logo-url").value = RESTAURANT_CONFIG.logoUrl || ""; document.getElementById("cfg-is-open").value = RESTAURANT_CONFIG.openMode; document.getElementById("settings-modal").classList.remove("hidden"); if (window.lucide) lucide.createIcons(); };
+        window.closeSettingsModal = () => { document.getElementById("settings-modal").classList.add("hidden"); };
+        window.saveRestaurantSettings = () => { const n = document.getElementById("cfg-name").value.trim(); const p = document.getElementById("cfg-whatsapp").value.replace(/\D/g, ""); const l = document.getElementById("cfg-logo-url").value.trim(); const m = document.getElementById("cfg-is-open").value; if(n) RESTAURANT_CONFIG.name=n; if(p.length>=10) RESTAURANT_CONFIG.whatsappNumber=p; RESTAURANT_CONFIG.logoUrl=l; RESTAURANT_CONFIG.openMode=m; persistConfig(); renderHeaderInfo(); window.closeSettingsModal(); showToast("Salvo!"); };
+
+        window.handleSearch = (e) => { searchQuery = e.target.value.toLowerCase().trim(); renderCategoryTabs(); renderMenu(); };
+        window.switchCategory = (id) => { activeCategory = id; searchQuery = ""; document.getElementById("search-input").value = ""; renderCategoryTabs(); renderMenu(); };
+
+        // --- FUNÇÕES INTERNAS ---
         function renderHeaderInfo() {
             document.getElementById("header-restaurant-name").textContent = RESTAURANT_CONFIG.name;
             document.getElementById("footer-restaurant-name").textContent = RESTAURANT_CONFIG.name;
@@ -392,6 +517,14 @@
             badge.innerHTML = `<span class="w-2 h-2 rounded-full ${openNow ? 'bg-emerald-500' : 'bg-amber-500'}"></span> ${openNow ? 'Aberto agora' : 'Fechado • Abre 11:00'}`;
         }
 
+        function isRestaurantCurrentlyOpen() {
+            if (RESTAURANT_CONFIG.openMode === "open") return true;
+            if (RESTAURANT_CONFIG.openMode === "closed") return false;
+            const now = new Date(); if (now.getDay() === 0) return false;
+            const mins = now.getHours() * 60 + now.getMinutes();
+            return mins >= 660 && mins < 840;
+        }
+
         function renderCategoryTabs() {
             document.getElementById("category-tabs").innerHTML = CATEGORIES.map(cat => `
                 <button type="button" onclick="switchCategory('${cat.id}')" class="flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-bold transition flex-shrink-0 ${activeCategory === cat.id && !searchQuery ? 'bg-brand-600 text-white' : 'bg-stone-100 text-stone-700'}">
@@ -399,9 +532,6 @@
                 </button>`).join("");
             if (window.lucide) lucide.createIcons();
         }
-
-        function switchCategory(id) { activeCategory = id; searchQuery = ""; document.getElementById("search-input").value = ""; renderCategoryTabs(); renderMenu(); }
-        function handleSearch(e) { searchQuery = e.target.value.toLowerCase().trim(); renderCategoryTabs(); renderMenu(); }
 
         function renderMenu() {
             const container = document.getElementById("menu-container");
@@ -441,50 +571,10 @@
                 </div>`;
         }
 
-        function openItemModal(id) {
-            const item = MENU_ITEMS.find(i => i.id === id); if (!item || item.isActive === false) return;
-            currentModalItem = item; currentModalQty = 1;
-            document.getElementById("modal-item-img").src = item.image; document.getElementById("modal-item-name").textContent = item.name; document.getElementById("modal-item-desc").textContent = item.description || ""; document.getElementById("modal-item-price").textContent = formatCurrency(item.price); document.getElementById("modal-qty-display").textContent = currentModalQty; document.getElementById("modal-notes").value = "";
-            
-            const cSec = document.getElementById("modal-choices-section"), cList = document.getElementById("modal-choices-list");
-            if (item.requiredChoice && item.requiredChoice.options.length) { cSec.classList.remove("hidden"); document.getElementById("modal-choices-title").textContent = item.requiredChoice.title + " *"; cList.innerHTML = item.requiredChoice.options.map((o, i) => `<label class="flex items-center justify-between p-3 rounded-xl border border-stone-200 cursor-pointer"><input type="radio" name="reqOpt" value="${i}" ${i===0?'checked':''} onchange="updateModalTotalPrice()"><span class="text-xs font-bold">${o.name}</span><span class="text-xs font-bold text-brand-700">${o.price > 0 ? '+ ' + formatCurrency(o.price) : 'Incluso'}</span></label>`).join(""); } else { cSec.classList.add("hidden"); }
-
-            const aSec = document.getElementById("modal-addons-section"), aList = document.getElementById("modal-addons-list");
-            if (item.addons && item.addons.length) { aSec.classList.remove("hidden"); aList.innerHTML = item.addons.map((a, i) => `<label class="flex items-center justify-between p-3 rounded-xl border border-stone-200 cursor-pointer"><input type="checkbox" name="addonChk" value="${i}" onchange="updateModalTotalPrice()"><span class="text-xs font-bold">${a.name}</span><span class="text-xs font-bold text-brand-700">+ ${formatCurrency(a.price)}</span></label>`).join(""); } else { aSec.classList.add("hidden"); }
-            
-            updateModalTotalPrice(); document.getElementById("item-modal").classList.remove("hidden"); if (window.lucide) lucide.createIcons();
-        }
-
-        function closeItemModal() { document.getElementById("item-modal").classList.add("hidden"); currentModalItem = null; }
-        function incrementModalQty() { currentModalQty++; document.getElementById("modal-qty-display").textContent = currentModalQty; updateModalTotalPrice(); }
-        function decrementModalQty() { if (currentModalQty > 1) { currentModalQty--; document.getElementById("modal-qty-display").textContent = currentModalQty; updateModalTotalPrice(); } }
-
-        function calculateCurrentModalUnitPrice() {
-            if (!currentModalItem) return 0;
-            let p = currentModalItem.price;
-            const r = document.querySelector('input[name="reqOpt"]:checked'); if (r) p += currentModalItem.requiredChoice.options[parseInt(r.value)].price || 0;
-            document.querySelectorAll('input[name="addonChk"]:checked').forEach(c => p += currentModalItem.addons[parseInt(c.value)].price || 0);
-            return p;
-        }
-
-        function updateModalTotalPrice() { if (currentModalItem) document.getElementById("modal-total-price").textContent = formatCurrency(calculateCurrentModalUnitPrice() * currentModalQty); }
-
-        function confirmAddToCart() {
-            if (!currentModalItem) return;
-            let opt = ""; const r = document.querySelector('input[name="reqOpt"]:checked'); if (r) opt = currentModalItem.requiredChoice.options[parseInt(r.value)].name;
-            const adds = []; document.querySelectorAll('input[name="addonChk"]:checked').forEach(c => adds.push(currentModalItem.addons[parseInt(c.value)].name));
-            
-            cart.push({ id: currentModalItem.id, name: currentModalItem.name, unitPrice: calculateCurrentModalUnitPrice(), qty: currentModalQty, chosenOption: opt, addons: adds, notes: document.getElementById("modal-notes").value.trim() });
-            closeItemModal(); updateCartBadge(); showToast(`"${currentModalItem.name}" adicionado!`);
-        }
-
         function updateCartBadge() {
             const bar = document.getElementById("cart-floating-bar"); const count = cart.reduce((a, i) => a + i.qty, 0); const sub = cart.reduce((a, i) => a + (i.unitPrice * i.qty), 0);
             if (count > 0) { bar.classList.remove("hidden"); document.getElementById("cart-total-badge").textContent = count; document.getElementById("cart-floating-subtotal").textContent = formatCurrency(sub); } else { bar.classList.add("hidden"); }
         }
-
-        function openCartModal() { renderCartItems(); updateCheckoutTotals(); document.getElementById("cart-modal").classList.remove("hidden"); if (window.lucide) lucide.createIcons(); }
-        function closeCartModal() { document.getElementById("cart-modal").classList.add("hidden"); }
 
         function renderCartItems() {
             const list = document.getElementById("cart-items-list");
@@ -507,12 +597,6 @@
             if (window.lucide) lucide.createIcons();
         }
 
-        function incrementCartItem(i) { cart[i].qty++; renderCartItems(); updateCartBadge(); updateCheckoutTotals(); }
-        function decrementCartItem(i) { if (cart[i].qty > 1) cart[i].qty--; else cart.splice(i, 1); renderCartItems(); updateCartBadge(); updateCheckoutTotals(); }
-        function removeCartItem(i) { cart.splice(i, 1); renderCartItems(); updateCartBadge(); updateCheckoutTotals(); }
-
-        function toggleOrderTypeFields() { document.getElementById("table-fields").classList.toggle("hidden", document.querySelector('input[name="orderType"]:checked').value !== "mesa"); }
-        function toggleChangeField() { document.getElementById("change-field-wrapper").classList.toggle("hidden", document.getElementById("payment-method").value !== "Dinheiro"); }
         function updateCheckoutTotals() { document.getElementById("summary-total").textContent = formatCurrency(cart.reduce((a, i) => a + i.unitPrice * i.qty, 0)); }
 
         function sendOrderToWhatsApp() {
@@ -533,62 +617,11 @@
             const win = window.open(url, "_blank");
             if (!win) window.location.href = url;
         }
-
-        let reqChoices = [], addsList = [];
-
-        function openEditItemModal(id = null) {
-            const isNew = !id;
-            document.getElementById("edit-item-modal-title").innerHTML = isNew ? "Adicionar Novo Item" : "Editar Item";
-            const catSel = document.getElementById("edit-item-category"); catSel.innerHTML = CATEGORIES.map(c => `<option value="${c.id}">${c.name}</option>`).join("");
-            
-            if (isNew) {
-                document.getElementById("edit-item-id").value = ""; document.getElementById("edit-item-name").value = ""; document.getElementById("edit-item-price").value = ""; document.getElementById("edit-item-desc").value = ""; document.getElementById("edit-item-image-url").value = ""; catSel.value = activeCategory; document.getElementById("edit-item-required-title").value = ""; document.getElementById("edit-item-active").checked = true; reqChoices = []; addsList = [];
-            } else {
-                const i = MENU_ITEMS.find(x => x.id === id); if (!i) return;
-                document.getElementById("edit-item-id").value = i.id; document.getElementById("edit-item-name").value = i.name; document.getElementById("edit-item-price").value = i.price.toFixed(2); document.getElementById("edit-item-desc").value = i.description || ""; document.getElementById("edit-item-image-url").value = i.image; catSel.value = i.category;
-                document.getElementById("edit-item-active").checked = i.isActive !== false;
-                document.getElementById("edit-item-required-title").value = i.requiredChoice ? i.requiredChoice.title : ""; reqChoices = i.requiredChoice ? [...i.requiredChoice.options] : []; addsList = i.addons ? [...i.addons] : [];
-            }
-            renderChoices(); renderAddons(); document.getElementById("edit-item-modal").classList.remove("hidden"); if (window.lucide) lucide.createIcons();
-        }
-
-        function closeEditItemModal() { document.getElementById("edit-item-modal").classList.add("hidden"); }
-        function renderChoices() { document.getElementById("required-choices-container").innerHTML = reqChoices.map((o, i) => `<div class="flex gap-2"><input type="text" value="${o.name}" oninput="reqChoices[${i}].name=this.value" class="flex-1 px-3 py-1.5 border rounded-lg text-xs" placeholder="Nome"><input type="number" value="${o.price}" oninput="reqChoices[${i}].price=parseFloat(this.value)||0" class="w-20 px-3 py-1.5 border rounded-lg text-xs" placeholder="R$"><button type="button" onclick="reqChoices.splice(${i},1);renderChoices()" class="text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`).join("") || `<p class="text-xs text-stone-400">Nenhuma opção.</p>`; if (window.lucide) lucide.createIcons(); }
-        function addRequiredChoiceRow() { reqChoices.push({ name: "", price: 0 }); renderChoices(); }
-        function renderAddons() { document.getElementById("addons-container").innerHTML = addsList.map((a, i) => `<div class="flex gap-2"><input type="text" value="${a.name}" oninput="addsList[${i}].name=this.value" class="flex-1 px-3 py-1.5 border rounded-lg text-xs" placeholder="Nome"><input type="number" value="${a.price}" oninput="addsList[${i}].price=parseFloat(this.value)||0" class="w-20 px-3 py-1.5 border rounded-lg text-xs" placeholder="R$"><button type="button" onclick="addsList.splice(${i},1);renderAddons()" class="text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`).join("") || `<p class="text-xs text-stone-400">Nenhum adicional.</p>`; if (window.lucide) lucide.createIcons(); }
-        function addAddonRow() { addsList.push({ name: "", price: 0 }); renderAddons(); }
-
-        function handleItemImageUpload(e) { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = ev => { document.getElementById("edit-item-image-url").value = ev.target.result; showToast("Foto carregada!"); }; r.readAsDataURL(f); }
-
-        function saveEditedItem() {
-            const id = document.getElementById("edit-item-id").value; const name = document.getElementById("edit-item-name").value.trim(); const price = parseFloat(document.getElementById("edit-item-price").value); const cat = document.getElementById("edit-item-category").value; const desc = document.getElementById("edit-item-desc").value.trim(); const img = document.getElementById("edit-item-image-url").value.trim() || "https://placehold.co/300x300/8B0D18/FFFFFF?text=MH"; const title = document.getElementById("edit-item-required-title").value.trim();
-            const isActive = document.getElementById("edit-item-active").checked; // Pega o status (Ativo/Esgotado)
-            
-            const validC = reqChoices.filter(o => o.name.trim()); const validA = addsList.filter(a => a.name.trim() && a.price > 0);
-            const req = (validC.length && title) ? { title, options: validC } : null; const add = validA.length ? validA : null;
-
-            if (id) { const i = MENU_ITEMS.find(x => x.id === id); if (i) Object.assign(i, { name, price, category: cat, description: desc, image: img, requiredChoice: req, addons: add, isActive: isActive }); showToast("Item atualizado!"); }
-            else { MENU_ITEMS.push({ id: "item_" + Date.now(), name, price, category: cat, description: desc, image: img, requiredChoice: req, addons: add, isActive: isActive }); showToast("Item criado!"); }
-            
-            persistMenu(); activeCategory = cat; renderCategoryTabs(); renderMenu(); closeEditItemModal();
-        }
+        window.sendOrderToWhatsApp = sendOrderToWhatsApp;
 
         let tempCats = [];
-        function openManageCategoriesModal() { tempCats = JSON.parse(JSON.stringify(CATEGORIES)); updateCatManagerUI(); document.getElementById("manage-categories-modal").classList.remove("hidden"); if (window.lucide) lucide.createIcons(); }
-        function closeManageCategoriesModal() { document.getElementById("manage-categories-modal").classList.add("hidden"); }
         function updateCatManagerUI() { document.getElementById("category-list-container").innerHTML = tempCats.map((c, i) => `<div class="flex gap-2"><input type="text" value="${c.name}" oninput="tempCats[${i}].name=this.value" class="flex-1 px-3 py-2 border rounded-lg text-xs font-bold"><button type="button" onclick="if(tempCats.length>1){tempCats.splice(${i},1);updateCatManagerUI()}" class="text-red-500 p-2"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`).join(""); if (window.lucide) lucide.createIcons(); }
-        function addNewCategory() { tempCats.push({ id: "cat_" + Date.now(), name: "Nova Aba", icon: "circle" }); updateCatManagerUI(); }
-        function saveCategories() { CATEGORIES = tempCats.filter(c => c.name.trim()); persistCategories(); if (!CATEGORIES.find(c => c.id === activeCategory)) activeCategory = CATEGORIES[0].id; renderCategoryTabs(); renderMenu(); closeManageCategoriesModal(); showToast("Abas salvas!"); }
-
-        function triggerCoverUpload() { document.getElementById("cover-file-input").click(); }
-        function handleCoverUpload(e) { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = ev => { RESTAURANT_CONFIG.coverUrl = ev.target.result; persistConfig(); renderHeaderInfo(); showToast("Capa atualizada!"); }; r.readAsDataURL(f); }
-        function triggerDirectLogoUpload() { document.getElementById("direct-logo-input").click(); }
-        function handleLogoFileUpload(e, direct = false) { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = ev => { if (direct) { RESTAURANT_CONFIG.logoUrl = ev.target.result; persistConfig(); renderHeaderInfo(); showToast("Logo atualizada!"); } else { document.getElementById("cfg-logo-url").value = ev.target.result; showToast("Imagem carregada!"); } }; r.readAsDataURL(f); }
-        function resetLogoToDefault() { document.getElementById("cfg-logo-url").value = ""; RESTAURANT_CONFIG.logoUrl = ""; persistConfig(); renderHeaderInfo(); showToast("Logo padrão!"); }
-
-        function openSettingsModal() { document.getElementById("cfg-name").value = RESTAURANT_CONFIG.name; document.getElementById("cfg-whatsapp").value = RESTAURANT_CONFIG.whatsappNumber; document.getElementById("cfg-logo-url").value = RESTAURANT_CONFIG.logoUrl || ""; document.getElementById("cfg-is-open").value = RESTAURANT_CONFIG.openMode; document.getElementById("settings-modal").classList.remove("hidden"); if (window.lucide) lucide.createIcons(); }
-        function closeSettingsModal() { document.getElementById("settings-modal").classList.add("hidden"); }
-        function saveRestaurantSettings() { const n = document.getElementById("cfg-name").value.trim(); const p = document.getElementById("cfg-whatsapp").value.replace(/\D/g, ""); const l = document.getElementById("cfg-logo-url").value.trim(); const m = document.getElementById("cfg-is-open").value; if(n) RESTAURANT_CONFIG.name=n; if(p.length>=10) RESTAURANT_CONFIG.whatsappNumber=p; RESTAURANT_CONFIG.logoUrl=l; RESTAURANT_CONFIG.openMode=m; persistConfig(); renderHeaderInfo(); closeSettingsModal(); showToast("Salvo!"); }
+        window.updateCatManagerUI = updateCatManagerUI;
 
         function formatCurrency(v) { return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
         function showToast(msg, type = "success") {
@@ -598,7 +631,34 @@
             c.appendChild(t); if (window.lucide) lucide.createIcons(); setTimeout(() => t.remove(), 3000);
         }
 
-        document.addEventListener("DOMContentLoaded", () => { renderHeaderInfo(); renderCategoryTabs(); renderMenu(); if (window.lucide) lucide.createIcons(); });
+        // INICIALIZAÇÃO
+        document.addEventListener("DOMContentLoaded", async () => { 
+            renderHeaderInfo(); renderCategoryTabs(); 
+            
+            try {
+                const querySnapshot = await getDocs(collection(db, "menu"));
+                
+                if (querySnapshot.empty) {
+                    const DEFAULT_MENU_ITEMS = [
+                        { id: "prato-1", category: "pratos", name: "Tambaqui Assado na Brasa", description: "Banda de tambaqui sem espinha assada na brasa, acompanha arroz branco, baião de dois, farofa crocante e vinagrete.", price: 38.00, image: "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=600&q=80", isActive: true, requiredChoice: { title: "Acompanhamento Principal", options: [{ name: "Arroz + Baião", price: 0 }, { name: "Somente Baião", price: 0 }] }, addons: [{ name: "Farofa Extra", price: 5.00 }] }
+                    ];
+                    for (const item of DEFAULT_MENU_ITEMS) {
+                        const { id, ...data } = item;
+                        await setDoc(doc(db, "menu", id), data);
+                    }
+                    const newSnapshot = await getDocs(collection(db, "menu"));
+                    newSnapshot.forEach((doc) => { MENU_ITEMS.push({ id: doc.id, ...doc.data() }); });
+                } else {
+                    querySnapshot.forEach((doc) => { MENU_ITEMS.push({ id: doc.id, ...doc.data() }); });
+                }
+            } catch (e) {
+                console.log("Erro Firebase (Modo Offline):", e);
+                showToast("Erro ao conectar. Usando dados locais.", "error");
+            }
+
+            renderMenu(); 
+            if (window.lucide) lucide.createIcons(); 
+        });
     </script>
 </body>
 </html>
