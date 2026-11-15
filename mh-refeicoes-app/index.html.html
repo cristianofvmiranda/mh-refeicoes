@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MH Refeições</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#8B0D18">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { 50: '#fdf2f2', 100: '#fbe8e8', 600: '#8B0D18', 700: '#6E0912', 800: '#54070E', 900: '#3A040A' },
+                        gold: { 400: '#FCD34D', 500: '#F5A623', 600: '#D97706' }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .animate-fade-in { animation: fadeIn 0.2s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body class="bg-stone-50 text-stone-800 min-h-screen flex flex-col antialiased">
+
+    <!-- CABEÇALHO -->
+    <header class="relative bg-white shadow-sm border-b border-brand-100">
+        <div class="relative h-36 sm:h-48 w-full overflow-hidden bg-brand-900 group">
+            <img id="header-cover-img" src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1400&q=80" onerror="this.src='https://placehold.co/1200x400/6E0912/F5A623?text=MH+Refei%C3%A7%C3%B5es'" alt="Capa MH Refeições" class="w-full h-full object-cover opacity-55">
+            <div class="absolute inset-0 bg-gradient-to-t from-brand-900/95 via-brand-900/45 to-transparent"></div>
+            <button type="button" onclick="triggerCoverUpload()" class="absolute bottom-3 left-3 bg-black/60 text-white px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 opacity-0 group-hover:opacity-100 sm:opacity-90"><i data-lucide="image" class="w-3.5 h-3.5 text-gold-400"></i><span>Trocar Capa</span></button>
+            <input type="file" id="cover-file-input" accept="image/*" class="hidden" onchange="handleCoverUpload(event)">
+            <button type="button" onclick="openSettingsModal()" class="absolute top-3 right-3 bg-black/55 text-white px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5"><i data-lucide="settings" class="w-3.5 h-3.5 text-gold-500"></i><span class="hidden sm:inline">Configurar Loja</span></button>
+        </div>
+
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 pb-5">
+            <div class="relative bg-white rounded-2xl border border-stone-200/90 shadow-md p-4 sm:p-5 -mt-12 sm:-mt-14">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div class="flex flex-col sm:flex-row items-center sm:items-center gap-4 text-center sm:text-left">
+                        <div class="relative group flex-shrink-0 -mt-14 sm:-mt-16">
+                            <button type="button" onclick="triggerDirectLogoUpload()" class="w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-white border-4 border-brand-600 shadow-xl overflow-hidden flex items-center justify-center ring-4 ring-white relative focus:outline-none transition transform group-hover:scale-[1.02]">
+                                <img id="header-logo-img" src="" alt="Logo MH" class="hidden w-full h-full object-cover bg-white">
+                                <svg id="header-logo-svg" viewBox="0 0 300 300" class="w-full h-full bg-white" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="150" cy="150" r="144" fill="#ffffff" stroke="#8B0D18" stroke-width="7"/>
+                                    <circle cx="150" cy="150" r="136" fill="none" stroke="#F5A623" stroke-width="1.5" stroke-dasharray="4 3"/>
+                                    <path d="M106 86 C92 84, 88 64, 104 56 C106 40, 130 34, 150 40 C170 34, 194 40, 196 56 C212 64, 208 84, 194 86 L188 106 L112 106 Z" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2.5"/>
+                                    <rect x="112" y="88" width="76" height="18" rx="3" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+                                    <text x="150" y="100" text-anchor="middle" font-family="Georgia, serif" font-style="italic" font-weight="bold" font-size="11" fill="#8B0D18">Marcia Leal</text>
+                                    <path d="M114 106 C108 130, 112 156, 122 164 L178 164 C188 156, 192 130, 186 106 Z" fill="#4a2511"/>
+                                    <ellipse cx="150" cy="132" rx="27" ry="30" fill="#fde0c8"/>
+                                    <circle cx="139" cy="129" r="3.5" fill="#1e293b"/><circle cx="140" cy="128" r="1.2" fill="#ffffff"/>
+                                    <path d="M156 129 Q162 124 168 129" fill="none" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round"/>
+                                    <path d="M141 143 Q150 152 159 143 Z" fill="#e11d48"/><path d="M142 143 Q150 146 158 143" fill="#ffffff"/>
+                                    <path d="M104 195 C106 168, 125 162, 150 162 C175 162, 194 168, 196 195 Z" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+                                    <path d="M122 165 L178 165 L183 196 L117 196 Z" fill="#8B0D18"/>
+                                    <text x="150" y="187" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="900" font-size="19" fill="#ffffff">MH</text>
+                                    <path d="M214 148 A20 20 0 0 1 254 148 Z" fill="none" stroke="#8B0D18" stroke-width="3"/>
+                                    <line x1="208" y1="152" x2="260" y2="152" stroke="#8B0D18" stroke-width="3" stroke-linecap="round"/>
+                                    <circle cx="234" cy="125" r="3" fill="#8B0D18"/>
+                                    <path d="M234 144 C234 144 226 138 226 134 C226 131 229 129 231.5 131 C233 132 234 133.5 234 133.5 C234 133.5 235 132 236.5 131 C239 129 242 131 242 134 C242 138 234 144 234 144 Z" fill="#F5A623"/>
+                                    <rect x="44" y="191" width="212" height="44" rx="14" fill="#ffffff" stroke="#8B0D18" stroke-width="4"/>
+                                    <rect x="48" y="195" width="204" height="36" rx="11" fill="none" stroke="#F5A623" stroke-width="1.5"/>
+                                    <text x="90" y="221" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="900" font-size="27" fill="#8B0D18">MH</text>
+                                    <text x="184" y="220" text-anchor="middle" font-family="Georgia, serif" font-style="italic" font-weight="bold" font-size="24" fill="#4a060c">refeições</text>
+                                </svg>
+                            </button>
+                            <input type="file" id="direct-logo-input" accept="image/*" class="hidden" onchange="handleLogoFileUpload(event, true)">
+                        </div>
+
+                        <div>
+                            <div class="flex items-center justify-center sm:justify-start gap-2.5 flex-wrap">
+                                <h1 id="header-restaurant-name" class="text-2xl sm:text-3xl font-extrabold text-stone-900 tracking-tight">MH Refeições</h1>
+                                <span id="status-badge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Aberto</span>
+                            </div>
+                            <p id="header-restaurant-subtitle" class="text-xs sm:text-sm text-stone-600 font-medium mt-1">Chef Marcia Leal • Comida Caseira</p>
+                            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-3 mt-2 text-xs font-semibold">
+                                <a href="https://instagram.com/mhfoo_d" target="_blank" class="inline-flex items-center gap-1 text-brand-600"><i data-lucide="instagram" class="w-3.5 h-3.5 text-gold-600"></i><span>@mhfoo_d</span></a>
+                                <span class="text-stone-300">•</span>
+                                <a id="header-whatsapp-link" href="#" target="_blank" class="inline-flex items-center gap-1 text-emerald-700"><i data-lucide="phone" class="w-3.5 h-3.5"></i><span id="header-whatsapp-display">(92) 98162-6445</span></a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap items-center justify-center sm:justify-end gap-2 sm:gap-3 text-xs text-stone-700 bg-brand-50/80 px-3.5 py-2.5 rounded-xl border border-brand-200/80">
+                        <div class="flex items-center gap-1.5 font-semibold text-brand-700"><i data-lucide="clock" class="w-4 h-4 text-brand-600"></i><span id="header-hours">Seg a Sáb • 11:00 às 14:00</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- BARRA FIXA -->
+    <nav class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-stone-200 shadow-sm">
+        <div class="max-w-5xl mx-auto px-3 sm:px-6 py-3">
+            <div class="flex flex-col sm:flex-row gap-3 items-center justify-between">
+                <div class="flex items-center gap-2 w-full sm:w-auto overflow-hidden flex-1">
+                    <div id="category-tabs" class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 flex-1"></div>
+                    <button onclick="openManageCategoriesModal()" class="p-2 rounded-full bg-stone-100 text-stone-600 transition flex-shrink-0"><i data-lucide="settings-2" class="w-4 h-4"></i></button>
+                </div>
+                <div class="flex items-center gap-2 w-full sm:w-auto flex-shrink-0">
+                    <button onclick="openAddItemModal()" class="flex-shrink-0 flex items-center justify-center gap-1 text-xs font-bold px-3.5 py-2.5 rounded-full bg-brand-600 text-white shadow-md"><i data-lucide="plus" class="w-4 h-4"></i> <span class="hidden sm:inline">Novo</span></button>
+                    <div class="relative flex-1 sm:w-60">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-stone-400"><i data-lucide="search" class="w-4 h-4"></i></span>
+                        <input type="text" id="search-input" oninput="handleSearch(event)" placeholder="Buscar..." class="w-full pl-9 pr-3 py-2.5 bg-stone-100 focus:bg-white border border-transparent focus:border-brand-600 rounded-full text-xs font-medium outline-none transition">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- CORPO PRINCIPAL -->
+    <main class="max-w-5xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full pb-32">
+        <div id="menu-container" class="space-y-10"></div>
+    </main>
+
+    <!-- BOTÕES FLUTUANTES -->
+    <button onclick="openAddItemModal()" class="fixed bottom-24 right-4 z-40 bg-brand-600 text-white p-4 rounded-full shadow-2xl transition transform hover:scale-105 border-2 border-white flex items-center justify-center group"><i data-lucide="plus" class="w-6 h-6"></i></button>
+
+    <div id="cart-floating-bar" class="hidden fixed bottom-4 inset-x-4 max-w-md mx-auto z-40">
+        <button type="button" onclick="openCartModal()" class="w-full bg-brand-600 text-white p-3.5 rounded-2xl shadow-2xl flex items-center justify-between px-5 transition transform active:scale-95 border border-brand-500">
+            <div class="flex items-center gap-3">
+                <span id="cart-total-badge" class="bg-white text-brand-700 font-black w-8 h-8 rounded-full flex items-center justify-center text-xs shadow-inner">0</span>
+                <div class="text-left"><p class="text-xs font-semibold text-brand-100">Sua Sacola</p><p id="cart-floating-subtotal" class="text-sm font-black">R$ 0,00</p></div>
+            </div>
+            <div class="flex items-center gap-2 font-bold text-xs bg-brand-800/80 px-3.5 py-2 rounded-xl"><span>Ver Pedido</span><i data-lucide="chevron-right" class="w-4 h-4"></i></div>
+        </button>
+    </div>
+
+    <!-- MODAL ITEM -->
+    <div id="item-modal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in">
+        <div class="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl max-h-[90vh] flex flex-col">
+            <div class="relative h-48 sm:h-56 bg-stone-200 flex-shrink-0">
+                <img id="modal-item-img" src="" class="w-full h-full object-cover">
+                <button type="button" onclick="closeItemModal()" class="absolute top-4 right-4 bg-black/50 text-white p-2 rounded-full"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div class="p-5 overflow-y-auto space-y-5 flex-1">
+                <div>
+                    <h2 id="modal-item-name" class="text-xl font-black text-stone-900"></h2>
+                    <p id="modal-item-desc" class="text-xs text-stone-600 mt-1 leading-relaxed"></p>
+                    <p id="modal-item-price" class="text-lg font-extrabold text-brand-700 mt-2"></p>
+                </div>
+                <div id="modal-choices-section" class="hidden space-y-2 pt-2 border-t border-stone-100">
+                    <h3 id="modal-choices-title" class="text-xs font-extrabold text-stone-800 uppercase"></h3>
+                    <div id="modal-choices-list" class="space-y-2"></div>
+                </div>
+                <div id="modal-addons-section" class="hidden space-y-2 pt-2 border-t border-stone-100">
+                    <h3 class="text-xs font-extrabold text-stone-800 uppercase">Deseja adicionar algo?</h3>
+                    <div id="modal-addons-list" class="space-y-2"></div>
+                </div>
+                <div class="pt-2 border-t border-stone-100">
+                    <label class="block text-xs font-bold text-stone-700 mb-1">Observações</label>
+                    <input type="text" id="modal-notes" placeholder="Ex: Sem cebola..." class="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs outline-none focus:border-brand-600">
+                </div>
+            </div>
+            <div class="p-4 bg-stone-50 border-t border-stone-200 flex items-center gap-4 flex-shrink-0">
+                <div class="flex items-center border border-stone-300 rounded-xl bg-white overflow-hidden">
+                    <button type="button" onclick="decrementModalQty()" class="px-3.5 py-2.5 text-stone-700"><i data-lucide="minus" class="w-4 h-4"></i></button>
+                    <span id="modal-qty-display" class="w-8 text-center text-sm font-extrabold text-stone-900">1</span>
+                    <button type="button" onclick="incrementModalQty()" class="px-3.5 py-2.5 text-stone-700"><i data-lucide="plus" class="w-4 h-4"></i></button>
+                </div>
+                <button type="button" onclick="confirmAddToCart()" class="flex-1 bg-brand-600 text-white py-3 px-4 rounded-xl font-bold text-sm shadow-md flex items-center justify-center gap-2">
+                    <span>Adicionar</span><span id="modal-total-price" class="bg-brand-800 px-2.5 py-1 rounded-lg text-xs">R$ 0,00</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CARRINHO -->
+    <div id="cart-modal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in">
+        <div class="bg-stone-50 w-full max-w-lg rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl max-h-[92vh] flex flex-col">
+            <div class="bg-white px-5 py-4 border-b border-stone-200 flex items-center justify-between">
+                <h2 class="text-base font-extrabold text-stone-900 flex items-center gap-2"><i data-lucide="shopping-bag" class="w-5 h-5 text-brand-600"></i> Sua Sacola</h2>
+                <button type="button" onclick="closeCartModal()" class="p-1.5 text-stone-500"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div class="p-4 overflow-y-auto space-y-4 flex-1">
+                <div id="cart-items-list" class="space-y-3 bg-white rounded-2xl p-4 border border-stone-200"></div>
+                <form id="checkout-form-section" onsubmit="event.preventDefault(); sendOrderToWhatsApp();" class="space-y-4">
+                    <div class="bg-white rounded-2xl p-4 border border-stone-200 space-y-3.5">
+                        <div>
+                            <label for="customer-name" class="block text-xs font-bold text-stone-700 mb-1">Seu Nome *</label>
+                            <input type="text" id="customer-name" required placeholder="Como podemos te chamar?" class="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-sm outline-none focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-stone-700 mb-1.5">Como deseja receber? *</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <label class="cursor-pointer"><input type="radio" name="orderType" value="retirada" checked onchange="toggleOrderTypeFields()" class="peer hidden"><div class="text-center py-3 rounded-xl border border-stone-300 peer-checked:border-brand-600 peer-checked:bg-brand-50 peer-checked:text-brand-700 text-xs font-bold transition">🛍️ Retirada</div></label>
+                                <label class="cursor-pointer"><input type="radio" name="orderType" value="mesa" onchange="toggleOrderTypeFields()" class="peer hidden"><div class="text-center py-3 rounded-xl border border-stone-300 peer-checked:border-brand-600 peer-checked:bg-brand-50 peer-checked:text-brand-700 text-xs font-bold transition">🍽️ Na Mesa</div></label>
+                            </div>
+                        </div>
+                        <div id="table-fields" class="hidden">
+                            <label for="table-number" class="block text-xs font-bold text-stone-700 mb-1">Número da Mesa *</label>
+                            <input type="text" id="table-number" placeholder="Ex: Mesa 04" class="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-sm outline-none">
+                        </div>
+                        <div>
+                            <label for="payment-method" class="block text-xs font-bold text-stone-700 mb-1">Forma de Pagamento</label>
+                            <select id="payment-method" onchange="toggleChangeField()" class="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-sm outline-none bg-white">
+                                <option value="Pix">Pix</option><option value="Cartão de Crédito">Cartão de Crédito</option><option value="Cartão de Débito">Cartão de Débito</option><option value="Dinheiro">Dinheiro</option>
+                            </select>
+                        </div>
+                        <div id="change-field-wrapper" class="hidden">
+                            <label for="cash-change" class="block text-xs font-bold text-stone-700 mb-1">Precisa de troco?</label>
+                            <input type="text" id="cash-change" placeholder="Ex: Troco para R$ 50,00" class="w-full px-3.5 py-2 rounded-xl border border-stone-300 text-sm outline-none">
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-2xl p-4 border border-stone-200">
+                        <div class="flex justify-between text-base font-black text-stone-900"><span>Total a pagar</span><span id="summary-total" class="text-brand-700">R$ 0,00</span></div>
+                    </div>
+                    <button type="submit" class="w-full bg-emerald-600 text-white py-3.5 rounded-2xl font-black text-sm shadow-lg flex items-center justify-center gap-2"><i data-lucide="message-circle" class="w-5 h-5"></i> Enviar Pedido no WhatsApp</button>
+                </form>
+                <div id="whatsapp-fallback-box" class="hidden bg-emerald-50 border border-emerald-200 rounded-2xl p-4 text-center">
+                    <p class="text-xs font-bold text-emerald-900 mb-2">Se o WhatsApp não abrir:</p>
+                    <a id="whatsapp-direct-anchor" href="#" target="_blank" class="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold">Abrir Link Manual</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CONFIGURAÇÕES -->
+    <div id="settings-modal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in">
+        <div class="bg-white w-full max-w-md rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="px-5 py-4 border-b border-stone-200 flex items-center justify-between">
+                <h2 class="text-base font-extrabold text-stone-900 flex items-center gap-2"><i data-lucide="settings" class="w-4 h-4 text-brand-600"></i> Configurar Loja</h2>
+                <button type="button" onclick="closeSettingsModal()" class="p-1.5 text-stone-500"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div class="p-5 overflow-y-auto space-y-4 text-xs sm:text-sm">
+                <div><label class="block font-bold text-stone-700 mb-1">Nome do Restaurante</label><input type="text" id="cfg-name" class="w-full px-3.5 py-2 rounded-xl border border-stone-300 outline-none"></div>
+                <div><label class="block font-bold text-stone-700 mb-1">WhatsApp (com 55)</label><input type="text" id="cfg-whatsapp" placeholder="5592..." class="w-full px-3.5 py-2 rounded-xl border border-stone-300 outline-none"></div>
+                <div>
+                    <label class="block font-bold text-stone-700 mb-1">Logo da Loja</label>
+                    <div class="flex items-center gap-2">
+                        <label class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-brand-50 text-brand-700 text-xs font-bold cursor-pointer border border-brand-200"><i data-lucide="upload" class="w-4 h-4"></i> Carregar Logo<input type="file" id="cfg-logo-file" accept="image/*" class="hidden" onchange="handleLogoFileUpload(event)"></label>
+                        <button type="button" onclick="resetLogoToDefault()" class="px-3 py-2.5 rounded-xl bg-stone-100 text-stone-700 text-xs font-semibold">Padrão</button>
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-bold text-stone-700 mb-1">Modo de Funcionamento</label>
+                    <select id="cfg-is-open" class="w-full px-3.5 py-2 rounded-xl border border-stone-300 outline-none bg-white"><option value="auto">Automático (11h às 14h)</option><option value="open">Aberto</option><option value="closed">Fechado</option></select>
+                </div>
+                <div class="pt-2 flex gap-2">
+                    <button type="button" onclick="closeSettingsModal()" class="flex-1 py-2.5 rounded-xl border border-stone-300 font-semibold text-stone-600">Cancelar</button>
+                    <button type="button" onclick="saveRestaurantSettings()" class="flex-1 py-2.5 rounded-xl bg-brand-600 text-white font-bold shadow">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EDITAR / ADICIONAR ITEM -->
+    <div id="edit-item-modal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in">
+        <div class="bg-white w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[95vh]">
+            <div class="px-5 py-4 border-b border-stone-200 flex items-center justify-between bg-stone-50">
+                <h2 id="edit-item-modal-title" class="text-base font-extrabold text-stone-900 flex items-center gap-2"></h2>
+                <button type="button" onclick="closeEditItemModal()" class="p-1.5 text-stone-500"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form onsubmit="event.preventDefault(); saveEditedItem();" class="p-5 space-y-4 overflow-y-auto flex-1">
+                <input type="hidden" id="edit-item-id">
+                
+                <!-- CHAVE DE ATIVAR/DESATIVAR -->
+                <div class="flex items-center justify-between p-3 bg-stone-50 border border-stone-200 rounded-xl">
+                    <div>
+                        <p class="text-sm font-bold text-stone-800">Item Disponível?</p>
+                        <p class="text-xs text-stone-500">Se desativado, o item fica esgotado e não pode ser pedido.</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="edit-item-active" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-stone-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-stone-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                    </label>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div><label class="block text-xs font-bold text-stone-700 mb-1">Nome *</label><input type="text" id="edit-item-name" required class="w-full px-3.5 py-2 rounded-xl border border-stone-300 text-sm outline-none"></div>
+                    <div><label class="block text-xs font-bold text-stone-700 mb-1">Preço Base (R$) *</label><input type="number" step="0.01" id="edit-item-price" required class="w-full px-3.5 py-2 rounded-xl border border-stone-300 text-sm outline-none font-bold text-brand-700"></div>
+                </div>
+                <div><label class="block text-xs font-bold text-stone-700 mb-1">Categoria *</label><select id="edit-item-category" required class="w-full px-3.5 py-2 rounded-xl border border-stone-300 text-sm outline-none bg-white"></select></div>
+                <div><label class="block text-xs font-bold text-stone-700 mb-1">Descrição</label><textarea id="edit-item-desc" rows="2" class="w-full px-3.5 py-2 rounded-xl border border-stone-300 text-sm outline-none"></textarea></div>
+                <div>
+                    <label class="block text-xs font-bold text-stone-700 mb-1">Foto</label>
+                    <div class="flex items-center gap-2">
+                        <label class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-brand-50 text-brand-700 text-xs font-bold cursor-pointer border border-brand-200"><i data-lucide="upload" class="w-4 h-4"></i> Carregar Foto<input type="file" id="edit-item-file-input" accept="image/*" class="hidden" onchange="handleItemImageUpload(event)"></label>
+                    </div>
+                    <input type="text" id="edit-item-image-url" placeholder="Ou URL da imagem" class="w-full mt-2 px-3.5 py-2 rounded-xl border border-stone-300 text-xs outline-none">
+                </div>
+                <div class="border-t border-stone-200 pt-4">
+                    <div class="flex items-center justify-between mb-2"><label class="text-xs font-extrabold text-stone-800 uppercase">Opções Obrigatórias</label><button type="button" onclick="addRequiredChoiceRow()" class="text-xs font-bold text-brand-600 flex items-center gap-1"><i data-lucide="plus" class="w-3.5 h-3.5"></i> Adicionar</button></div>
+                    <input type="text" id="edit-item-required-title" placeholder="Título (Ex: Ponto da Carne)" class="w-full mb-2 px-3 py-1.5 rounded-lg border border-stone-300 text-xs outline-none">
+                    <div id="required-choices-container" class="space-y-2"></div>
+                </div>
+                <div class="border-t border-stone-200 pt-4">
+                    <div class="flex items-center justify-between mb-2"><label class="text-xs font-extrabold text-stone-800 uppercase">Adicionais Extras</label><button type="button" onclick="addAddonRow()" class="text-xs font-bold text-brand-600 flex items-center gap-1"><i data-lucide="plus" class="w-3.5 h-3.5"></i> Adicionar</button></div>
+                    <div id="addons-container" class="space-y-2"></div>
+                </div>
+                <div class="pt-4 border-t border-stone-200 flex gap-2">
+                    <button type="button" onclick="closeEditItemModal()" class="flex-1 py-3 rounded-xl border border-stone-300 text-sm font-semibold text-stone-600">Cancelar</button>
+                    <button type="submit" class="flex-1 py-3 rounded-xl bg-brand-600 text-white text-sm font-bold shadow">Salvar Item</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL GERENCIAR ABAS -->
+    <div id="manage-categories-modal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in">
+        <div class="bg-white w-full max-w-md rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="px-5 py-4 border-b border-stone-200 flex items-center justify-between">
+                <h2 class="text-base font-extrabold text-stone-900 flex items-center gap-2"><i data-lucide="layout-list" class="w-4 h-4 text-brand-600"></i> Gerenciar Abas</h2>
+                <button type="button" onclick="closeManageCategoriesModal()" class="p-1.5 text-stone-500"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div class="p-5 overflow-y-auto space-y-4">
+                <div id="category-list-container" class="space-y-2"></div>
+                <button type="button" onclick="addNewCategory()" class="w-full py-2.5 rounded-xl border-2 border-dashed border-brand-300 text-brand-600 font-bold text-xs hover:bg-brand-50 flex items-center justify-center gap-1"><i data-lucide="plus" class="w-4 h-4"></i> Nova Aba</button>
+            </div>
+            <div class="p-4 bg-stone-50 border-t border-stone-200 flex gap-2">
+                <button type="button" onclick="closeManageCategoriesModal()" class="flex-1 py-2.5 rounded-xl border border-stone-300 font-semibold text-stone-600">Fechar</button>
+                <button type="button" onclick="saveCategories()" class="flex-1 py-2.5 rounded-xl bg-brand-600 text-white font-bold shadow">Salvar Abas</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-brand-900 text-brand-100 py-8 mt-auto">
+        <div class="max-w-5xl mx-auto px-4 text-center space-y-3">
+            <h2 id="footer-restaurant-name" class="text-base font-black text-white"></h2>
+            <p class="text-[11px] text-brand-400 pt-2 border-t border-brand-800">© 2026 MH Refeições. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <div id="toast-container" class="fixed top-20 right-4 z-50 pointer-events-none flex flex-col gap-2"></div>
+
+    <script>
+        // REGISTRO SERVICE WORKER
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(err => console.log('Erro SW:', err)); });
+        }
+
+        // LÓGICA DO APP
+        let RESTAURANT_CONFIG = { name: "MH Refeições", subtitle: "Chef Marcia Leal", whatsappNumber: "5592981626445", logoUrl: "", coverUrl: "", hours: "Seg a Sáb • 11:00 às 14:00", openMode: "auto" };
+        const STORAGE_KEY_CONFIG = "mh_cfg_v5"; const STORAGE_KEY_MENU = "mh_menu_v5"; const STORAGE_KEY_CATS = "mh_cats_v5";
+
+        try { const s = localStorage.getItem(STORAGE_KEY_CONFIG); if (s) RESTAURANT_CONFIG = { ...RESTAURANT_CONFIG, ...JSON.parse(s) }; } catch (e) {}
+        function persistConfig() { try { localStorage.setItem(STORAGE_KEY_CONFIG, JSON.stringify(RESTAURANT_CONFIG)); } catch (e) {} }
+
+        let CATEGORIES = [ { id: "pratos", name: "Pratos", icon: "utensils" }, { id: "porcoes", name: "Porções", icon: "fish" }, { id: "bebidas", name: "Bebidas", icon: "cup-soda" }, { id: "sobremesas", name: "Sobremesas", icon: "cake" } ];
+        try { const s = localStorage.getItem(STORAGE_KEY_CATS); if (s) { const p = JSON.parse(s); if (Array.isArray(p) && p.length > 0) CATEGORIES = p; } } catch (e) {}
+        function persistCategories() { try { localStorage.setItem(STORAGE_KEY_CATS, JSON.stringify(CATEGORIES)); } catch (e) {} }
+
+        const DEFAULT_MENU_ITEMS = [
+            { id: "prato-1", category: "pratos", name: "Tambaqui Assado na Brasa", description: "Banda de tambaqui sem espinha assada na brasa, acompanha arroz branco, baião de dois, farofa crocante e vinagrete.", price: 38.00, image: "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=600&q=80", isActive: true, requiredChoice: { title: "Acompanhamento Principal", options: [{ name: "Arroz + Baião", price: 0 }, { name: "Somente Baião", price: 0 }] }, addons: [{ name: "Farofa Extra", price: 5.00 }] },
+            { id: "prato-2", category: "pratos", name: "Bife Acebolado da Chef", description: "Suculento contra-filé com cebolas caramelizadas, arroz, feijão, batata frita e salada.", price: 26.00, image: "https://images.unsplash.com/photo-1600891964092-4316c288032e?auto=format&fit=crop&w=600&q=80", isActive: true, requiredChoice: { title: "Ponto da Carne", options: [{ name: "Ao Ponto", price: 0 }, { name: "Bem Passado", price: 0 }] } },
+            { id: "porcao-1", category: "porcoes", name: "Macaxeira Frita com Carne de Sol", description: "Porção de macaxeira crocante coberta com carne de sol e queijo coalho.", price: 36.00, image: "https://images.unsplash.com/photo-1518013431117-eb1465fa5752?auto=format&fit=crop&w=600&q=80", isActive: true },
+            { id: "bebida-1", category: "bebidas", name: "Suco Natural (500ml)", description: "Preparado na hora com polpa regional.", price: 9.00, image: "https://images.unsplash.com/photo-1621506289937-a8e4df240d0b?auto=format&fit=crop&w=600&q=80", isActive: true, requiredChoice: { title: "Sabor", options: [{ name: "Cupuaçu", price: 0 }, { name: "Maracujá", price: 0 }] } },
+            { id: "sobremesa-1", category: "sobremesas", name: "Pudim de Leite", description: "Fatia generosa do tradicional pudim com calda de caramelo.", price: 10.00, image: "https://images.unsplash.com/photo-1590080875515-8a3a8dc5735e?auto=format&fit=crop&w=600&q=80", isActive: true }
+        ];
+
+        let MENU_ITEMS = [...DEFAULT_MENU_ITEMS];
+        try { const s = localStorage.getItem(STORAGE_KEY_MENU); if (s) { const p = JSON.parse(s); if (Array.isArray(p) && p.length > 0) MENU_ITEMS = p; } } catch (e) {}
+        function persistMenu() { try { localStorage.setItem(STORAGE_KEY_MENU, JSON.stringify(MENU_ITEMS)); } catch (e) {} }
+
+        let cart = [], activeCategory = CATEGORIES[0]?.id || "pratos", searchQuery = "", currentModalItem = null, currentModalQty = 1;
+
+        function isRestaurantCurrentlyOpen() {
+            if (RESTAURANT_CONFIG.openMode === "open") return true;
+            if (RESTAURANT_CONFIG.openMode === "closed") return false;
+            const now = new Date(); if (now.getDay() === 0) return false;
+            const mins = now.getHours() * 60 + now.getMinutes();
+            return mins >= 660 && mins < 840;
+        }
+
+        function renderHeaderInfo() {
+            document.getElementById("header-restaurant-name").textContent = RESTAURANT_CONFIG.name;
+            document.getElementById("footer-restaurant-name").textContent = RESTAURANT_CONFIG.name;
+            const cleanPhone = RESTAURANT_CONFIG.whatsappNumber.replace(/\D/g, "");
+            document.getElementById("header-whatsapp-display").textContent = cleanPhone.length === 13 ? `(${cleanPhone.substring(2,4)}) ${cleanPhone.substring(4,9)}-${cleanPhone.substring(9)}` : cleanPhone;
+            document.getElementById("header-whatsapp-link").href = `https://api.whatsapp.com/send?phone=${cleanPhone}`;
+
+            const logoImg = document.getElementById("header-logo-img"), logoSvg = document.getElementById("header-logo-svg");
+            if (RESTAURANT_CONFIG.logoUrl) { logoImg.src = RESTAURANT_CONFIG.logoUrl; logoImg.classList.remove("hidden"); logoSvg.classList.add("hidden"); } else { logoImg.classList.add("hidden"); logoSvg.classList.remove("hidden"); }
+            if (RESTAURANT_CONFIG.coverUrl) document.getElementById("header-cover-img").src = RESTAURANT_CONFIG.coverUrl;
+
+            const openNow = isRestaurantCurrentlyOpen(), badge = document.getElementById("status-badge");
+            badge.className = `inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${openNow ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-900'}`;
+            badge.innerHTML = `<span class="w-2 h-2 rounded-full ${openNow ? 'bg-emerald-500' : 'bg-amber-500'}"></span> ${openNow ? 'Aberto agora' : 'Fechado • Abre 11:00'}`;
+        }
+
+        function renderCategoryTabs() {
+            document.getElementById("category-tabs").innerHTML = CATEGORIES.map(cat => `
+                <button type="button" onclick="switchCategory('${cat.id}')" class="flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-bold transition flex-shrink-0 ${activeCategory === cat.id && !searchQuery ? 'bg-brand-600 text-white' : 'bg-stone-100 text-stone-700'}">
+                    <i data-lucide="${cat.icon || 'circle'}" class="w-4 h-4"></i> <span>${cat.name}</span>
+                </button>`).join("");
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function switchCategory(id) { activeCategory = id; searchQuery = ""; document.getElementById("search-input").value = ""; renderCategoryTabs(); renderMenu(); }
+        function handleSearch(e) { searchQuery = e.target.value.toLowerCase().trim(); renderCategoryTabs(); renderMenu(); }
+
+        function renderMenu() {
+            const container = document.getElementById("menu-container");
+            const items = MENU_ITEMS.filter(i => searchQuery ? (i.name.toLowerCase().includes(searchQuery) || i.description?.toLowerCase().includes(searchQuery)) : i.category === activeCategory);
+            
+            if (items.length === 0) {
+                container.innerHTML = `<div class="text-center py-12 bg-white rounded-3xl border border-stone-200"><i data-lucide="search-x" class="w-12 h-12 mx-auto text-stone-300"></i><p class="text-xs text-stone-500 mt-2">Nenhum item encontrado.</p></div>`;
+                if (window.lucide) lucide.createIcons(); return;
+            }
+            container.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 gap-4">${items.map(renderItemCard).join("")}</div>`;
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function renderItemCard(item) {
+            const isInactive = item.isActive === false;
+            return `
+                <div onclick="${isInactive ? '' : `openItemModal('${item.id}')`}" class="group bg-white rounded-2xl border border-stone-200 p-4 shadow-sm flex gap-4 relative ${isInactive ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}">
+                    <div class="flex-1 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h3 class="text-sm font-extrabold text-stone-900 ${isInactive ? 'line-through text-stone-500' : ''}">${item.name}</h3>
+                                ${isInactive ? `<span class="bg-red-100 text-red-700 text-[10px] font-black px-2 py-0.5 rounded-md uppercase">Esgotado</span>` : ''}
+                            </div>
+                            <p class="text-xs text-stone-500 mt-1 line-clamp-2">${item.description || ""}</p>
+                        </div>
+                        <div class="flex items-center justify-between mt-3 pt-2 border-t border-stone-100">
+                            <span class="text-base font-extrabold ${isInactive ? 'text-stone-400' : 'text-brand-700'}">${formatCurrency(item.price)}</span>
+                            <div class="flex items-center gap-2">
+                                <button type="button" onclick="event.stopPropagation(); openEditItemModal('${item.id}')" class="p-1.5 rounded-xl bg-stone-100 text-stone-600 hover:bg-brand-50 hover:text-brand-700 transition"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+                                ${!isInactive ? `<span class="inline-flex items-center gap-1 text-xs font-bold text-brand-600 bg-brand-50 px-2.5 py-1 rounded-xl"><i data-lucide="plus" class="w-3.5 h-3.5"></i> Add</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="w-24 h-24 rounded-xl overflow-hidden bg-stone-100 flex-shrink-0 relative">
+                        <img src="${item.image}" class="w-full h-full object-cover ${isInactive ? 'grayscale' : ''}">
+                    </div>
+                </div>`;
+        }
+
+        function openItemModal(id) {
+            const item = MENU_ITEMS.find(i => i.id === id); if (!item || item.isActive === false) return;
+            currentModalItem = item; currentModalQty = 1;
+            document.getElementById("modal-item-img").src = item.image; document.getElementById("modal-item-name").textContent = item.name; document.getElementById("modal-item-desc").textContent = item.description || ""; document.getElementById("modal-item-price").textContent = formatCurrency(item.price); document.getElementById("modal-qty-display").textContent = currentModalQty; document.getElementById("modal-notes").value = "";
+            
+            const cSec = document.getElementById("modal-choices-section"), cList = document.getElementById("modal-choices-list");
+            if (item.requiredChoice && item.requiredChoice.options.length) { cSec.classList.remove("hidden"); document.getElementById("modal-choices-title").textContent = item.requiredChoice.title + " *"; cList.innerHTML = item.requiredChoice.options.map((o, i) => `<label class="flex items-center justify-between p-3 rounded-xl border border-stone-200 cursor-pointer"><input type="radio" name="reqOpt" value="${i}" ${i===0?'checked':''} onchange="updateModalTotalPrice()"><span class="text-xs font-bold">${o.name}</span><span class="text-xs font-bold text-brand-700">${o.price > 0 ? '+ ' + formatCurrency(o.price) : 'Incluso'}</span></label>`).join(""); } else { cSec.classList.add("hidden"); }
+
+            const aSec = document.getElementById("modal-addons-section"), aList = document.getElementById("modal-addons-list");
+            if (item.addons && item.addons.length) { aSec.classList.remove("hidden"); aList.innerHTML = item.addons.map((a, i) => `<label class="flex items-center justify-between p-3 rounded-xl border border-stone-200 cursor-pointer"><input type="checkbox" name="addonChk" value="${i}" onchange="updateModalTotalPrice()"><span class="text-xs font-bold">${a.name}</span><span class="text-xs font-bold text-brand-700">+ ${formatCurrency(a.price)}</span></label>`).join(""); } else { aSec.classList.add("hidden"); }
+            
+            updateModalTotalPrice(); document.getElementById("item-modal").classList.remove("hidden"); if (window.lucide) lucide.createIcons();
+        }
+
+        function closeItemModal() { document.getElementById("item-modal").classList.add("hidden"); currentModalItem = null; }
+        function incrementModalQty() { currentModalQty++; document.getElementById("modal-qty-display").textContent = currentModalQty; updateModalTotalPrice(); }
+        function decrementModalQty() { if (currentModalQty > 1) { currentModalQty--; document.getElementById("modal-qty-display").textContent = currentModalQty; updateModalTotalPrice(); } }
+
+        function calculateCurrentModalUnitPrice() {
+            if (!currentModalItem) return 0;
+            let p = currentModalItem.price;
+            const r = document.querySelector('input[name="reqOpt"]:checked'); if (r) p += currentModalItem.requiredChoice.options[parseInt(r.value)].price || 0;
+            document.querySelectorAll('input[name="addonChk"]:checked').forEach(c => p += currentModalItem.addons[parseInt(c.value)].price || 0);
+            return p;
+        }
+
+        function updateModalTotalPrice() { if (currentModalItem) document.getElementById("modal-total-price").textContent = formatCurrency(calculateCurrentModalUnitPrice() * currentModalQty); }
+
+        function confirmAddToCart() {
+            if (!currentModalItem) return;
+            let opt = ""; const r = document.querySelector('input[name="reqOpt"]:checked'); if (r) opt = currentModalItem.requiredChoice.options[parseInt(r.value)].name;
+            const adds = []; document.querySelectorAll('input[name="addonChk"]:checked').forEach(c => adds.push(currentModalItem.addons[parseInt(c.value)].name));
+            
+            cart.push({ id: currentModalItem.id, name: currentModalItem.name, unitPrice: calculateCurrentModalUnitPrice(), qty: currentModalQty, chosenOption: opt, addons: adds, notes: document.getElementById("modal-notes").value.trim() });
+            closeItemModal(); updateCartBadge(); showToast(`"${currentModalItem.name}" adicionado!`);
+        }
+
+        function updateCartBadge() {
+            const bar = document.getElementById("cart-floating-bar"); const count = cart.reduce((a, i) => a + i.qty, 0); const sub = cart.reduce((a, i) => a + (i.unitPrice * i.qty), 0);
+            if (count > 0) { bar.classList.remove("hidden"); document.getElementById("cart-total-badge").textContent = count; document.getElementById("cart-floating-subtotal").textContent = formatCurrency(sub); } else { bar.classList.add("hidden"); }
+        }
+
+        function openCartModal() { renderCartItems(); updateCheckoutTotals(); document.getElementById("cart-modal").classList.remove("hidden"); if (window.lucide) lucide.createIcons(); }
+        function closeCartModal() { document.getElementById("cart-modal").classList.add("hidden"); }
+
+        function renderCartItems() {
+            const list = document.getElementById("cart-items-list");
+            if (cart.length === 0) { list.innerHTML = `<p class="text-center text-xs text-stone-500 py-4">Sua sacola está vazia.</p>`; return; }
+            list.innerHTML = cart.map((i, idx) => `
+                <div class="flex items-center justify-between gap-3 p-3 rounded-xl bg-stone-50 border border-stone-200">
+                    <div class="flex-1">
+                        <h4 class="text-xs font-extrabold">${i.qty}x ${i.name}</h4>
+                        ${i.chosenOption ? `<p class="text-[10px] text-stone-600">↳ ${i.chosenOption}</p>` : ""}
+                        ${i.addons.length ? `<p class="text-[10px] text-stone-600">↳ ${i.addons.join(", ")}</p>` : ""}
+                        <p class="text-xs font-black text-brand-700 mt-1">${formatCurrency(i.unitPrice * i.qty)}</p>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <button onclick="decrementCartItem(${idx})" class="p-1 bg-stone-200 rounded"><i data-lucide="minus" class="w-3 h-3"></i></button>
+                        <span class="text-xs font-bold w-4 text-center">${i.qty}</span>
+                        <button onclick="incrementCartItem(${idx})" class="p-1 bg-stone-200 rounded"><i data-lucide="plus" class="w-3 h-3"></i></button>
+                        <button onclick="removeCartItem(${idx})" class="p-1 bg-red-100 text-red-600 rounded ml-1"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
+                    </div>
+                </div>`).join("");
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function incrementCartItem(i) { cart[i].qty++; renderCartItems(); updateCartBadge(); updateCheckoutTotals(); }
+        function decrementCartItem(i) { if (cart[i].qty > 1) cart[i].qty--; else cart.splice(i, 1); renderCartItems(); updateCartBadge(); updateCheckoutTotals(); }
+        function removeCartItem(i) { cart.splice(i, 1); renderCartItems(); updateCartBadge(); updateCheckoutTotals(); }
+
+        function toggleOrderTypeFields() { document.getElementById("table-fields").classList.toggle("hidden", document.querySelector('input[name="orderType"]:checked').value !== "mesa"); }
+        function toggleChangeField() { document.getElementById("change-field-wrapper").classList.toggle("hidden", document.getElementById("payment-method").value !== "Dinheiro"); }
+        function updateCheckoutTotals() { document.getElementById("summary-total").textContent = formatCurrency(cart.reduce((a, i) => a + i.unitPrice * i.qty, 0)); }
+
+        function sendOrderToWhatsApp() {
+            if (!cart.length) return showToast("Sacola vazia!", "error");
+            const name = document.getElementById("customer-name").value.trim(); if (!name) return showToast("Informe seu nome.", "error");
+            const type = document.querySelector('input[name="orderType"]:checked').value;
+            let table = ""; if (type === "mesa") { table = document.getElementById("table-number").value.trim(); if (!table) return showToast("Informe a mesa.", "error"); }
+            
+            const pay = document.getElementById("payment-method").value; const change = document.getElementById("cash-change").value.trim();
+            const sub = cart.reduce((a, i) => a + i.unitPrice * i.qty, 0);
+            
+            let text = `*NOVO PEDIDO - ${RESTAURANT_CONFIG.name.toUpperCase()}*\n👤 *Cliente:* ${name}\n📦 *Tipo:* ${type === "retirada" ? "Retirada" : "Mesa " + table}\n\n*ITENS:*\n`;
+            cart.forEach(i => { text += `▪ ${i.qty}x ${i.name} - ${formatCurrency(i.unitPrice * i.qty)}\n`; if(i.chosenOption) text += `   ↳ ${i.chosenOption}\n`; if(i.addons.length) text += `   ↳ ${i.addons.join(", ")}\n`; });
+            text += `\n✅ *TOTAL:* ${formatCurrency(sub)}\n💳 *Pagamento:* ${pay}`;
+            if (pay === "Dinheiro" && change) text += `\n🪙 *Troco:* ${change}`;
+
+            const url = `https://api.whatsapp.com/send?phone=${RESTAURANT_CONFIG.whatsappNumber}&text=${encodeURIComponent(text)}`;
+            const win = window.open(url, "_blank");
+            if (!win) window.location.href = url;
+        }
+
+        let reqChoices = [], addsList = [];
+
+        function openEditItemModal(id = null) {
+            const isNew = !id;
+            document.getElementById("edit-item-modal-title").innerHTML = isNew ? "Adicionar Novo Item" : "Editar Item";
+            const catSel = document.getElementById("edit-item-category"); catSel.innerHTML = CATEGORIES.map(c => `<option value="${c.id}">${c.name}</option>`).join("");
+            
+            if (isNew) {
+                document.getElementById("edit-item-id").value = ""; document.getElementById("edit-item-name").value = ""; document.getElementById("edit-item-price").value = ""; document.getElementById("edit-item-desc").value = ""; document.getElementById("edit-item-image-url").value = ""; catSel.value = activeCategory; document.getElementById("edit-item-required-title").value = ""; document.getElementById("edit-item-active").checked = true; reqChoices = []; addsList = [];
+            } else {
+                const i = MENU_ITEMS.find(x => x.id === id); if (!i) return;
+                document.getElementById("edit-item-id").value = i.id; document.getElementById("edit-item-name").value = i.name; document.getElementById("edit-item-price").value = i.price.toFixed(2); document.getElementById("edit-item-desc").value = i.description || ""; document.getElementById("edit-item-image-url").value = i.image; catSel.value = i.category;
+                document.getElementById("edit-item-active").checked = i.isActive !== false;
+                document.getElementById("edit-item-required-title").value = i.requiredChoice ? i.requiredChoice.title : ""; reqChoices = i.requiredChoice ? [...i.requiredChoice.options] : []; addsList = i.addons ? [...i.addons] : [];
+            }
+            renderChoices(); renderAddons(); document.getElementById("edit-item-modal").classList.remove("hidden"); if (window.lucide) lucide.createIcons();
+        }
+
+        function closeEditItemModal() { document.getElementById("edit-item-modal").classList.add("hidden"); }
+        function renderChoices() { document.getElementById("required-choices-container").innerHTML = reqChoices.map((o, i) => `<div class="flex gap-2"><input type="text" value="${o.name}" oninput="reqChoices[${i}].name=this.value" class="flex-1 px-3 py-1.5 border rounded-lg text-xs" placeholder="Nome"><input type="number" value="${o.price}" oninput="reqChoices[${i}].price=parseFloat(this.value)||0" class="w-20 px-3 py-1.5 border rounded-lg text-xs" placeholder="R$"><button type="button" onclick="reqChoices.splice(${i},1);renderChoices()" class="text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`).join("") || `<p class="text-xs text-stone-400">Nenhuma opção.</p>`; if (window.lucide) lucide.createIcons(); }
+        function addRequiredChoiceRow() { reqChoices.push({ name: "", price: 0 }); renderChoices(); }
+        function renderAddons() { document.getElementById("addons-container").innerHTML = addsList.map((a, i) => `<div class="flex gap-2"><input type="text" value="${a.name}" oninput="addsList[${i}].name=this.value" class="flex-1 px-3 py-1.5 border rounded-lg text-xs" placeholder="Nome"><input type="number" value="${a.price}" oninput="addsList[${i}].price=parseFloat(this.value)||0" class="w-20 px-3 py-1.5 border rounded-lg text-xs" placeholder="R$"><button type="button" onclick="addsList.splice(${i},1);renderAddons()" class="text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`).join("") || `<p class="text-xs text-stone-400">Nenhum adicional.</p>`; if (window.lucide) lucide.createIcons(); }
+        function addAddonRow() { addsList.push({ name: "", price: 0 }); renderAddons(); }
+
+        function handleItemImageUpload(e) { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = ev => { document.getElementById("edit-item-image-url").value = ev.target.result; showToast("Foto carregada!"); }; r.readAsDataURL(f); }
+
+        function saveEditedItem() {
+            const id = document.getElementById("edit-item-id").value; const name = document.getElementById("edit-item-name").value.trim(); const price = parseFloat(document.getElementById("edit-item-price").value); const cat = document.getElementById("edit-item-category").value; const desc = document.getElementById("edit-item-desc").value.trim(); const img = document.getElementById("edit-item-image-url").value.trim() || "https://placehold.co/300x300/8B0D18/FFFFFF?text=MH"; const title = document.getElementById("edit-item-required-title").value.trim();
+            const isActive = document.getElementById("edit-item-active").checked; // Pega o status (Ativo/Esgotado)
+            
+            const validC = reqChoices.filter(o => o.name.trim()); const validA = addsList.filter(a => a.name.trim() && a.price > 0);
+            const req = (validC.length && title) ? { title, options: validC } : null; const add = validA.length ? validA : null;
+
+            if (id) { const i = MENU_ITEMS.find(x => x.id === id); if (i) Object.assign(i, { name, price, category: cat, description: desc, image: img, requiredChoice: req, addons: add, isActive: isActive }); showToast("Item atualizado!"); }
+            else { MENU_ITEMS.push({ id: "item_" + Date.now(), name, price, category: cat, description: desc, image: img, requiredChoice: req, addons: add, isActive: isActive }); showToast("Item criado!"); }
+            
+            persistMenu(); activeCategory = cat; renderCategoryTabs(); renderMenu(); closeEditItemModal();
+        }
+
+        let tempCats = [];
+        function openManageCategoriesModal() { tempCats = JSON.parse(JSON.stringify(CATEGORIES)); updateCatManagerUI(); document.getElementById("manage-categories-modal").classList.remove("hidden"); if (window.lucide) lucide.createIcons(); }
+        function closeManageCategoriesModal() { document.getElementById("manage-categories-modal").classList.add("hidden"); }
+        function updateCatManagerUI() { document.getElementById("category-list-container").innerHTML = tempCats.map((c, i) => `<div class="flex gap-2"><input type="text" value="${c.name}" oninput="tempCats[${i}].name=this.value" class="flex-1 px-3 py-2 border rounded-lg text-xs font-bold"><button type="button" onclick="if(tempCats.length>1){tempCats.splice(${i},1);updateCatManagerUI()}" class="text-red-500 p-2"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`).join(""); if (window.lucide) lucide.createIcons(); }
+        function addNewCategory() { tempCats.push({ id: "cat_" + Date.now(), name: "Nova Aba", icon: "circle" }); updateCatManagerUI(); }
+        function saveCategories() { CATEGORIES = tempCats.filter(c => c.name.trim()); persistCategories(); if (!CATEGORIES.find(c => c.id === activeCategory)) activeCategory = CATEGORIES[0].id; renderCategoryTabs(); renderMenu(); closeManageCategoriesModal(); showToast("Abas salvas!"); }
+
+        function triggerCoverUpload() { document.getElementById("cover-file-input").click(); }
+        function handleCoverUpload(e) { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = ev => { RESTAURANT_CONFIG.coverUrl = ev.target.result; persistConfig(); renderHeaderInfo(); showToast("Capa atualizada!"); }; r.readAsDataURL(f); }
+        function triggerDirectLogoUpload() { document.getElementById("direct-logo-input").click(); }
+        function handleLogoFileUpload(e, direct = false) { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = ev => { if (direct) { RESTAURANT_CONFIG.logoUrl = ev.target.result; persistConfig(); renderHeaderInfo(); showToast("Logo atualizada!"); } else { document.getElementById("cfg-logo-url").value = ev.target.result; showToast("Imagem carregada!"); } }; r.readAsDataURL(f); }
+        function resetLogoToDefault() { document.getElementById("cfg-logo-url").value = ""; RESTAURANT_CONFIG.logoUrl = ""; persistConfig(); renderHeaderInfo(); showToast("Logo padrão!"); }
+
+        function openSettingsModal() { document.getElementById("cfg-name").value = RESTAURANT_CONFIG.name; document.getElementById("cfg-whatsapp").value = RESTAURANT_CONFIG.whatsappNumber; document.getElementById("cfg-logo-url").value = RESTAURANT_CONFIG.logoUrl || ""; document.getElementById("cfg-is-open").value = RESTAURANT_CONFIG.openMode; document.getElementById("settings-modal").classList.remove("hidden"); if (window.lucide) lucide.createIcons(); }
+        function closeSettingsModal() { document.getElementById("settings-modal").classList.add("hidden"); }
+        function saveRestaurantSettings() { const n = document.getElementById("cfg-name").value.trim(); const p = document.getElementById("cfg-whatsapp").value.replace(/\D/g, ""); const l = document.getElementById("cfg-logo-url").value.trim(); const m = document.getElementById("cfg-is-open").value; if(n) RESTAURANT_CONFIG.name=n; if(p.length>=10) RESTAURANT_CONFIG.whatsappNumber=p; RESTAURANT_CONFIG.logoUrl=l; RESTAURANT_CONFIG.openMode=m; persistConfig(); renderHeaderInfo(); closeSettingsModal(); showToast("Salvo!"); }
+
+        function formatCurrency(v) { return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
+        function showToast(msg, type = "success") {
+            const c = document.getElementById("toast-container"); const t = document.createElement("div");
+            t.className = `px-4 py-3 rounded-xl shadow-lg text-white text-xs font-bold flex items-center gap-2 ${type === 'error' ? 'bg-red-600' : 'bg-stone-900'}`;
+            t.innerHTML = `<i data-lucide="${type === 'error' ? 'alert-circle' : 'check-circle'}" class="w-4 h-4 text-gold-400"></i> <span>${msg}</span>`;
+            c.appendChild(t); if (window.lucide) lucide.createIcons(); setTimeout(() => t.remove(), 3000);
+        }
+
+        document.addEventListener("DOMContentLoaded", () => { renderHeaderInfo(); renderCategoryTabs(); renderMenu(); if (window.lucide) lucide.createIcons(); });
+    </script>
+</body>
+</html>
